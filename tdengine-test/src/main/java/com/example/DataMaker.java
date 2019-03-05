@@ -7,5 +7,5 @@ public interface DataMaker {
 	 void createSuperTable(Connection conn, String createTableSQL);
 	 String createTable(Connection conn, String[] args);
 	 void run();
-	 void insertData(Connection conn,String tableName,long totalNum);
+	 long insertData(Connection conn,String tableName,long totalNum);
 }

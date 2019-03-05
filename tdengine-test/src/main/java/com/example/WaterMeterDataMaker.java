@@ -25,7 +25,8 @@ public class WaterMeterDataMaker implements DataMaker
 		
 	}
 
-	public void insertData(Connection conn, String tableName, long totalNum) {
+	public long insertData(Connection conn, String tableName, long totalNum) {
+		return totalNum;
 		// TODO Auto-generated method stub
 		
 	}

@@ -9,10 +9,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FlowDataMaker implements DataMaker {
 
-	private static final int DATA_FLOW_TOTAL_NUM = 1;
+	private static final int DATA_FLOW_TOTAL_NUM = 10;
 
 	private static final int COMPANY_NUM = 2;
 
@@ -30,7 +31,7 @@ public class FlowDataMaker implements DataMaker {
 			"create table if not exists %s (ts timestamp, forword_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
 			"flow");
 
-	private static final int THREAD_NUM = 5;
+	private static final int THREAD_NUM = 2;
 
 	private List<String> tableList = new ArrayList<String>();
 
@@ -44,17 +45,14 @@ public class FlowDataMaker implements DataMaker {
 			sql = String.format("use %s", DB_NAME);
 			stmt.executeUpdate(sql);
 			System.out.println(sql + " success");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("create db failed");
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("create failed");
 		} finally {
 			try {
 				if (stmt != null)
 					stmt.close();
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
@@ -68,17 +66,14 @@ public class FlowDataMaker implements DataMaker {
 			String sql = createTableSQL;
 			stmt.executeUpdate(sql);
 			System.out.println(sql + " success");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("create table failed");
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("create table failed");
 		} finally {
 			try {
 				if (stmt != null)
 					stmt.close();
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
@@ -97,17 +92,14 @@ public class FlowDataMaker implements DataMaker {
 					companyId, factoryId, deviceId + "");
 			stmt.executeUpdate(sql);
 			System.out.println(sql + " success");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("create table failed");
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("create table failed");
 		} finally {
 			try {
 				if (stmt != null)
 					stmt.close();
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
@@ -125,19 +117,15 @@ public class FlowDataMaker implements DataMaker {
 					String[] args = new String[] { i + "", j + "", k + "" };
 					String tableName = createTable(conn, args);
 					tableList.add(tableName);
-//					insertData(conn,tableName,DATA_FLOW_TOTAL_NUM);
 				}
 			}
 		}
-		doInsertData();
+		doInsertData(conn);
 	}
 
-	private void doInsertData() {
+	private void doInsertData(final Connection conn) {
 		Hashtable<Integer, List<String>> tasks = new Hashtable<Integer, List<String>>();
 		int tableNum = tableList.size();
-
-		
-
 		if (tableNum < THREAD_NUM) {
 			List<String> tablesPerThread = new ArrayList<String>();
 			tablesPerThread.addAll(tableList);
@@ -182,14 +170,45 @@ public class FlowDataMaker implements DataMaker {
 				}
 				System.out.println("ThreadNum:" + entry.getKey() + ",list:" + sb.toString());
 			}
+			
+			List<Thread> threadList = new ArrayList<Thread>();
+			final AtomicLong rowsInserted = new AtomicLong();
+			
+			for (final Entry<Integer, List<String>> entry : tasks.entrySet()) {
+				System.out.println("ThreadNum:" + entry.getKey()+" begin");
+				Thread t = new Thread(new Runnable() {
 
+					public void run() {
+						List<String> tables = entry.getValue();
+						for(String tableName:tables) {
+							rowsInserted.addAndGet(insertData(conn, tableName, DATA_FLOW_TOTAL_NUM));
+						}
+					}
+					
+				});
+				threadList.add(t);
+			}
+			long start = System.currentTimeMillis();
+			
+			for(Thread t :threadList) {
+				t.start();
+			}
+			
+			for(Thread t :threadList) {
+				try {
+					t.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			long end = System.currentTimeMillis();
+			System.out.printf("Total %d rows inserted, time spend %d seconds.\n", rowsInserted.get(), (end - start) / 1000);
 		}
-
 	}
 
-	public void insertData(Connection conn, String tableName, long totalNum) {
+	public long insertData(Connection conn, String tableName, long totalNum) {
 		Statement stmt = null;
-		int start = (int) System.currentTimeMillis();
 		long rowsInserted = 0;
 		Random random = new Random();
 		try {
@@ -202,23 +221,18 @@ public class FlowDataMaker implements DataMaker {
 				rowsInserted += affectRows;
 			}
 			System.out.println("insert " + rowsInserted + " rows into " + tableName + " success");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("insert into table failed");
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("insert into table failed");
 		} finally {
 			try {
 				if (stmt != null)
 					stmt.close();
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		int end = (int) System.currentTimeMillis();
-		System.out.printf("Total %d rows inserted, %d rows failed, time spend %d seconds.\n", rowsInserted,
-				totalNum - rowsInserted, (end - start) / 1000);
+		return rowsInserted;
 	}
 
 }
