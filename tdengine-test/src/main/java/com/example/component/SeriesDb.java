@@ -12,13 +12,16 @@ public class SeriesDb {
 	}
 	private List<InsertUnit> insertUnitList = new ArrayList<InsertUnit>();
 	
-	private int insertUnitSize =insertUnitList.size();
+	private int insertUnitSize;
 	
 	private int threadNum =1;
 	{
 		for(int i=0;i<threadNum ;i++) {
-			insertUnitList.add(new InsertUnit(100,15*1000));
+			InsertUnit insertUnit = new InsertUnit(100,15*1000);
+			insertUnitList.add(insertUnit);
+			insertUnit.start();
 		}	
+		insertUnitSize =insertUnitList.size();
 	}
 	
 	//select a insertUnit and add the data into it

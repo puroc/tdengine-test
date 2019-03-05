@@ -98,6 +98,9 @@ public class DbUtil {
 	}
 	
 	public int insertData(ConnWrapper connWrapper,List<TimeSeriesData> dataList) {
+		if(dataList.isEmpty()) {
+			return 0;
+		}
 		int affectRows=0;
 		try {
 		StringBuilder sb = new StringBuilder("insert into");
@@ -110,6 +113,7 @@ public class DbUtil {
 			sb.append(")");
 		}
 			String sql = sb.toString();
+//			System.out.println("sql:"+sql);
 			affectRows = connWrapper.getStmt().executeUpdate(sql);
 			System.out.println("insert " + affectRows + " rows success");
 		} catch (Throwable e) {

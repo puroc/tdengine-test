@@ -28,7 +28,9 @@ public class InsertUnit {
 
 	private Timer timer = new Timer();
 
-	private Thread thread = new Thread();
+	private Thread thread = new Thread(new InsertTask());
+	
+	private ConnWrapper connWrapper;
 
 	private List<TimeSeriesData> dataList = new ArrayList<TimeSeriesData>();
 
@@ -41,21 +43,26 @@ public class InsertUnit {
 
 	// start insert unit
 	public void start() {
+		connWrapper = DbUtil.getInstance().connectToTaosd();
 		timer.schedule(new InsertTimerTask(), 1000, this.insertInterval);
 		thread.start();
 	}
+	
+	public void stop() {
+		DbUtil.getInstance().closeConn(connWrapper);
+		timer.cancel();
+		thread.interrupt();
+	}
 
 	// insert the timeSeries data into the timeSeries db
-	private void insert(List<TimeSeriesData> dataList) {
-		ConnWrapper connWrapper = null;
+	private int insert(List<TimeSeriesData> dataList) {
+		int affectRows=0;
 		try {
-			connWrapper = DbUtil.getInstance().connectToTaosd();
-			DbUtil.getInstance().insertData(connWrapper, dataList);
+			affectRows = DbUtil.getInstance().insertData(connWrapper, dataList);
 		} catch (Throwable t) {
 			t.printStackTrace();
-		} finally {
-			DbUtil.getInstance().closeConn(connWrapper);
-		}
+		} 
+		return affectRows;
 	}
 
 	// execute batch insert and rest the dataList and counter(num)
@@ -70,7 +77,8 @@ public class InsertUnit {
 		@Override
 		public void run() {
 			try {
-				if (!isWorking.get()) {
+				//if the insert thread is not working and the dataList is not empty , then this timer will insert the data
+				if (!isWorking.get() && !dataList.isEmpty()) {
 					batchInsert(dataList);
 				}
 			} catch (Throwable e) {

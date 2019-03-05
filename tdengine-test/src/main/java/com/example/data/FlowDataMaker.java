@@ -37,7 +37,7 @@ public class FlowDataMaker implements IDataMaker{
 						String time = TimeUtil.format(fromDate);
 						int forwordFlow = z;
 						int instantFlow = random.nextInt(10);
-						String data = String.format("%s,%d,0,%d", time,forwordFlow, instantFlow);
+						String data = String.format("'%s',%d,0,%d", time,forwordFlow, instantFlow);
 						TimeSeriesData tsd =new TimeSeriesData();
 						tsd.setTableName(tableName);
 						tsd.setData(data);
