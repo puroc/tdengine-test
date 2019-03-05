@@ -8,7 +8,7 @@ import com.example.util.DbUtil;
 
 public class Main {
 
-	private static final int NUM_PER_RTU = 10;
+	private static final int NUM_PER_RTU = 10000;
 
 	public static void main(String[] args) {
 		DbUtil.getInstance().createDb();

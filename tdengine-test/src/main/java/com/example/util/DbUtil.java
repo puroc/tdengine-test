@@ -115,7 +115,7 @@ public class DbUtil {
 			String sql = sb.toString();
 //			System.out.println("sql:"+sql);
 			affectRows = connWrapper.getStmt().executeUpdate(sql);
-			System.out.println("insert " + affectRows + " rows success");
+//			System.out.println("insert " + affectRows + " rows success");
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("insert into table failed");

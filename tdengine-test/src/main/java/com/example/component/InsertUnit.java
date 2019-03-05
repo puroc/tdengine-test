@@ -7,17 +7,23 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.ConnWrapper;
 import com.example.util.DbUtil;
 
 public class InsertUnit {
+	
+	private AtomicLong insertTotalNum = new AtomicLong();
 
 	private int batchNum;
 
 	private int insertInterval;
 
-	public InsertUnit(int batchNum, int insertInterval) {
+	private String unitName;
+
+	public InsertUnit(String unitName,int batchNum, int insertInterval) {
+		this.unitName = unitName;
 		this.batchNum = batchNum;
 		this.insertInterval = insertInterval;
 	}
@@ -59,6 +65,7 @@ public class InsertUnit {
 		int affectRows=0;
 		try {
 			affectRows = DbUtil.getInstance().insertData(connWrapper, dataList);
+			System.out.println(this.unitName+" insert " + affectRows + " rows success");
 		} catch (Throwable t) {
 			t.printStackTrace();
 		} 
@@ -68,8 +75,17 @@ public class InsertUnit {
 	// execute batch insert and rest the dataList and counter(num)
 	private synchronized void batchInsert(List<TimeSeriesData> dataList) {
 		insert(dataList);
+		this.insertTotalNum.addAndGet(dataList.size());
 		dataList.clear();
 		num.set(0);
+	}
+
+	public AtomicLong getInsertTotalNum() {
+		return this.insertTotalNum;
+	}
+
+	public void setInsertTotalNum(AtomicLong insertTotalNum) {
+		this.insertTotalNum = insertTotalNum;
 	}
 
 	class InsertTimerTask extends TimerTask {
