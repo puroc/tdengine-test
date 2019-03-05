@@ -1,4 +1,4 @@
-package com.example;
+package com.example.table;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -8,7 +8,10 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class FlowDataMaker implements DataMaker {
+import com.example.ConnWrapper;
+import com.example.util.DbUtil;
+
+public class FlowTableMaker implements ITableMaker {
 
 	private static final int DATA_FLOW_TOTAL_NUM = 10;
 
@@ -29,7 +32,7 @@ public class FlowDataMaker implements DataMaker {
 	private List<String> tableList = new ArrayList<String>();
 
 	public void createSuperTable(String createTableSQL) {
-		ConnectionObj obj = null;
+		ConnWrapper obj = null;
 		try {
 			obj = DbUtil.getInstance().connectToTaosd();
 			String sql = createTableSQL;
@@ -39,7 +42,7 @@ public class FlowDataMaker implements DataMaker {
 			e.printStackTrace();
 			System.out.println("create table failed");
 		} finally {
-			DbUtil.getInstance().closeConnectionObj(obj);
+			DbUtil.getInstance().closeConn(obj);
 		}
 	}
 
@@ -48,7 +51,7 @@ public class FlowDataMaker implements DataMaker {
 		int factoryId = Integer.parseInt(args[1]);
 		int deviceId = Integer.parseInt(args[2]);
 		String tableName = "flow_" + companyId + "_" + factoryId + "_" + deviceId;
-		ConnectionObj obj = null;
+		ConnWrapper obj = null;
 		try {
 			obj = DbUtil.getInstance().connectToTaosd();
 			String sql = String.format(
@@ -60,7 +63,7 @@ public class FlowDataMaker implements DataMaker {
 			e.printStackTrace();
 			System.out.println("create table failed");
 		} finally {
-			DbUtil.getInstance().closeConnectionObj(obj);
+			DbUtil.getInstance().closeConn(obj);
 		}
 		return tableName;
 	}
@@ -76,7 +79,6 @@ public class FlowDataMaker implements DataMaker {
 				}
 			}
 		}
-		doInsertData();
 	}
 
 	private void doInsertData() {
@@ -135,7 +137,7 @@ public class FlowDataMaker implements DataMaker {
 				Thread t = new Thread(new Runnable() {
 
 					public void run() {
-						ConnectionObj obj = null;
+						ConnWrapper obj = null;
 						try {
 							obj = DbUtil.getInstance().connectToTaosd();
 						List<String> tables = entry.getValue();
@@ -144,7 +146,7 @@ public class FlowDataMaker implements DataMaker {
 						}}catch(Throwable t) {
 							t.printStackTrace();
 						}finally {
-							DbUtil.getInstance().closeConnectionObj(obj);
+							DbUtil.getInstance().closeConn(obj);
 						}
 					}
 					
@@ -170,7 +172,7 @@ public class FlowDataMaker implements DataMaker {
 		}
 	}
 
-	public long insertData(ConnectionObj obj,String tableName, long totalNum) {
+	public long insertData(ConnWrapper obj,String tableName, long totalNum) {
 		long rowsInserted = 0;
 		Random random = new Random();
 		try {
