@@ -1,8 +1,5 @@
 package com.example;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -21,109 +18,68 @@ public class FlowDataMaker implements DataMaker {
 
 	private static final int RTU_NUM = 10;
 
-	private static final String DB_NAME = "water_db";
-
-	private static final String SQL_CREATE_DB = String.format("create database if not exists %s", DB_NAME);
-
 	private static final String SUPER_TABLE_NAME_FLOW = "flow";
 
 	private static final String SQL_SUPER_TABLE_FLOW = String.format(
 			"create table if not exists %s (ts timestamp, forword_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
 			"flow");
 
-	private static final int THREAD_NUM = 2;
+	private static final int THREAD_NUM = 1;
 
 	private List<String> tableList = new ArrayList<String>();
 
-	public void createAndOpenDb(Connection conn, String createDbSQL) {
-		Statement stmt = null;
+	public void createSuperTable(String createTableSQL) {
+		ConnectionObj obj = null;
 		try {
-			stmt = (Statement) conn.createStatement();
-			String sql = SQL_CREATE_DB;
-			stmt.executeUpdate(sql);
-			System.out.println(sql + " success");
-			sql = String.format("use %s", DB_NAME);
-			stmt.executeUpdate(sql);
-			System.out.println(sql + " success");
-		} catch (Throwable e) {
-			e.printStackTrace();
-			System.out.println("create failed");
-		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	public void createSuperTable(Connection conn, String createTableSQL) {
-		Statement stmt = null;
-		try {
-			stmt = (Statement) conn.createStatement();
+			obj = DbUtil.getInstance().connectToTaosd();
 			String sql = createTableSQL;
-			stmt.executeUpdate(sql);
+			obj.getStmt().executeUpdate(sql);
 			System.out.println(sql + " success");
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("create table failed");
 		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			DbUtil.getInstance().closeConnectionObj(obj);
 		}
 	}
 
-	public String createTable(Connection conn, String[] args) {
+	public String createTable(String[] args) {
 		int companyId = Integer.parseInt(args[0]);
 		int factoryId = Integer.parseInt(args[1]);
 		int deviceId = Integer.parseInt(args[2]);
 		String tableName = "flow_" + companyId + "_" + factoryId + "_" + deviceId;
-		Statement stmt = null;
+		ConnectionObj obj = null;
 		try {
-			stmt = (Statement) conn.createStatement();
+			obj = DbUtil.getInstance().connectToTaosd();
 			String sql = String.format(
 					"create table if not exists %s using " + SUPER_TABLE_NAME_FLOW + " tags(%d,%d,%s)", tableName,
 					companyId, factoryId, deviceId + "");
-			stmt.executeUpdate(sql);
+			obj.getStmt().executeUpdate(sql);
 			System.out.println(sql + " success");
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("create table failed");
 		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			DbUtil.getInstance().closeConnectionObj(obj);
 		}
 		return tableName;
 	}
 
 	public void run() {
-		DbUtil.getInstance().connectToTaosd();
-		Connection conn = DbUtil.getInstance().getConnection();
-		createAndOpenDb(conn, SQL_CREATE_DB);
-		createSuperTable(conn, SQL_SUPER_TABLE_FLOW);
+		createSuperTable(SQL_SUPER_TABLE_FLOW);
 		for (int i = 0; i < COMPANY_NUM; i++) {
 			for (int j = 0; j < FACTORY_NUM; j++) {
 				for (int k = 0; k < RTU_NUM; k++) {
 					String[] args = new String[] { i + "", j + "", k + "" };
-					String tableName = createTable(conn, args);
+					String tableName = createTable(args);
 					tableList.add(tableName);
 				}
 			}
 		}
-		doInsertData(conn);
+		doInsertData();
 	}
 
-	private void doInsertData(final Connection conn) {
+	private void doInsertData() {
 		Hashtable<Integer, List<String>> tasks = new Hashtable<Integer, List<String>>();
 		int tableNum = tableList.size();
 		if (tableNum < THREAD_NUM) {
@@ -179,9 +135,16 @@ public class FlowDataMaker implements DataMaker {
 				Thread t = new Thread(new Runnable() {
 
 					public void run() {
+						ConnectionObj obj = null;
+						try {
+							obj = DbUtil.getInstance().connectToTaosd();
 						List<String> tables = entry.getValue();
 						for(String tableName:tables) {
-							rowsInserted.addAndGet(insertData(conn, tableName, DATA_FLOW_TOTAL_NUM));
+							rowsInserted.addAndGet(insertData(obj,tableName, DATA_FLOW_TOTAL_NUM));
+						}}catch(Throwable t) {
+							t.printStackTrace();
+						}finally {
+							DbUtil.getInstance().closeConnectionObj(obj);
 						}
 					}
 					
@@ -207,31 +170,22 @@ public class FlowDataMaker implements DataMaker {
 		}
 	}
 
-	public long insertData(Connection conn, String tableName, long totalNum) {
-		Statement stmt = null;
+	public long insertData(ConnectionObj obj,String tableName, long totalNum) {
 		long rowsInserted = 0;
 		Random random = new Random();
 		try {
-			stmt = (Statement) conn.createStatement();
 			for (int i = 0; i < totalNum; i++) {
 				int forwordFlow = i;
 				int instantFlow = random.nextInt(10);
 				String sql = String.format("insert into " + tableName + " values(0,%d,0,%d)", forwordFlow, instantFlow);
-				long affectRows = stmt.executeUpdate(sql);
+				long affectRows = obj.getStmt().executeUpdate(sql);
 				rowsInserted += affectRows;
 			}
 			System.out.println("insert " + rowsInserted + " rows into " + tableName + " success");
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.out.println("insert into table failed");
-		} finally {
-			try {
-				if (stmt != null)
-					stmt.close();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
+		} 
 		return rowsInserted;
 	}
 
