@@ -1,5 +1,6 @@
 package com.example.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,6 +17,11 @@ public class TimeUtil {
 	public static String format(Date date) {
 		 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		 return sdf.format(date);
+	}
+	
+	public static Date parse(String time) throws ParseException {
+		 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		 return sdf.parse(time);
 	}
 	
 	public static void main(String[] args) {

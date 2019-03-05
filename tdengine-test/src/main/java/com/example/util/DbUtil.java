@@ -113,7 +113,7 @@ public class DbUtil {
 			sb.append(")");
 		}
 			String sql = sb.toString();
-//			System.out.println("sql:"+sql);
+			System.out.println("sql:"+sql);
 			affectRows = connWrapper.getStmt().executeUpdate(sql);
 //			System.out.println("insert " + affectRows + " rows success");
 		} catch (Throwable e) {
