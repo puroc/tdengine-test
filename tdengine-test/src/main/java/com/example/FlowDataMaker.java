@@ -3,6 +3,11 @@ package com.example;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 
 public class FlowDataMaker implements DataMaker{
@@ -17,13 +22,17 @@ public class FlowDataMaker implements DataMaker{
 
 	private static final String DB_NAME = "water_db";
 
-	public static final String SQL_CREATE_DB = String.format("create database if not exists %s", DB_NAME);
+	private static final String SQL_CREATE_DB = String.format("create database if not exists %s", DB_NAME);
 
-	public static final String SUPER_TABLE_NAME_FLOW = "flow";
+	private static final String SUPER_TABLE_NAME_FLOW = "flow";
 
-	public static final String SQL_SUPER_TABLE_FLOW = String.format(
+	private static final String SQL_SUPER_TABLE_FLOW = String.format(
 			"create table if not exists %s (ts timestamp, forword_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
 			"flow");
+
+	private static final int THREAD_NUM = 5;
+	
+	private List<String> tableList = new ArrayList<String>();
 
 	public void createAndOpenDb(Connection conn, String createDbSQL) {
 		Statement stmt = null;
@@ -115,10 +124,59 @@ public class FlowDataMaker implements DataMaker{
 				for (int k = 0; k < RTU_NUM; k++) {
 					String[] args = new String[] {i+"",j+"",k+""};
 					String tableName = createTable(conn,args);
-					insertData(conn,tableName,DATA_FLOW_TOTAL_NUM);
+//					insertData(conn,tableName,DATA_FLOW_TOTAL_NUM);
 				}
 			}
 		}		
+		doInsertData();
+	}
+	
+	private void doInsertData() {
+		Hashtable<Integer, List<String>> tasks = new Hashtable<Integer, List<String>>();
+		int tableNum = tableList.size();
+		
+			List<String> tablesPerThread = new ArrayList<String>();
+			
+			if(tableNum < THREAD_NUM) {
+				tablesPerThread.addAll(tableList);
+				tasks.put(0, tablesPerThread);
+			}else {
+				if(tableNum / THREAD_NUM ==0) {
+					int numsPerThread = tableNum / THREAD_NUM;
+					int index = 0;
+					for(int j =0;j<THREAD_NUM;j++) {
+						for(int k=0;k<numsPerThread;k++) {
+							tablesPerThread.add(tableList.get(index+k));
+							index++;
+						}
+						tasks.put(j, tablesPerThread);
+					}
+				}else {
+					int numsPerThread = tableNum / THREAD_NUM;
+					int index = 0;
+					for(int j =0;j<THREAD_NUM;j++) {
+					if(j==THREAD_NUM-1) {
+						numsPerThread = tableNum % THREAD_NUM;
+					}
+						for(int k=0;k<numsPerThread;k++) {
+							tablesPerThread.add(tableList.get(index+k));
+							index++;
+						}
+						tasks.put(j, tablesPerThread);
+					}
+				}
+				
+				for(Entry<Integer, List<String>> entry :tasks.entrySet()) {
+					Iterator<String> iterator = entry.getValue().iterator();
+					StringBuffer sb = new StringBuffer();
+					while(iterator.hasNext()) {
+						sb.append(iterator.next()).append(",");
+					}
+					System.out.println("ThreadNum:"+entry.getKey()+",list:"+sb.toString());
+				}
+				
+			}
+		
 	}
 
 	public void insertData(Connection conn,String tableName,long totalNum) {
