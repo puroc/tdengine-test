@@ -179,6 +179,9 @@ public class FlowDataMaker implements DataMaker {
 				int instantFlow = random.nextInt(10);
 				String sql = String.format("insert into " + tableName + " values(0,%d,0,%d)", forwordFlow, instantFlow);
 				long affectRows = obj.getStmt().executeUpdate(sql);
+				if(affectRows<=0) {
+					System.out.println("insert "+tableName+" failed row:"+affectRows);
+				}
 				rowsInserted += affectRows;
 			}
 			System.out.println("insert " + rowsInserted + " rows into " + tableName + " success");
