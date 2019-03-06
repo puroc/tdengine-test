@@ -2,13 +2,16 @@ package com.example.component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SeriesDb {
+	
+	private AtomicInteger timerExecuteNum =  new AtomicInteger();
 	
 	public static final SeriesDb SERIES_DB = new SeriesDb();
 	private SeriesDb () {
 		for(int i=0;i<threadNum ;i++) {
-			InsertUnit insertUnit = new InsertUnit("unit-"+i,300,15*1000);
+			InsertUnit insertUnit = new InsertUnit("unit-"+i,100,10);
 			getInsertUnitList().add(insertUnit);
 			insertUnit.start();
 		}	
@@ -35,6 +38,12 @@ public class SeriesDb {
 	}
 	public void setInsertUnitList(List<InsertUnit> insertUnitList) {
 		this.insertUnitList = insertUnitList;
+	}
+	public AtomicInteger getTimerExecuteNum() {
+		return timerExecuteNum;
+	}
+	public void setTimerExecuteNum(AtomicInteger timerExecuteNum) {
+		this.timerExecuteNum = timerExecuteNum;
 	}
 	
  

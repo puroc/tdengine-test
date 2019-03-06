@@ -15,9 +15,9 @@ public class FlowTableMaker implements ITableMaker {
 
 	private static final int DATA_FLOW_TOTAL_NUM = 10;
 
-	public static final int COMPANY_NUM = 2;
+	public static final int COMPANY_NUM = 3;
 
-	public static final int FACTORY_NUM = 3;
+	public static final int FACTORY_NUM = 2;
 
 	public static final int RTU_NUM = 10;
 

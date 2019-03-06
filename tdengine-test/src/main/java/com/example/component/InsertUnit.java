@@ -13,16 +13,18 @@ import com.example.ConnWrapper;
 import com.example.util.DbUtil;
 
 public class InsertUnit {
-	
+
 	private AtomicLong insertTotalNum = new AtomicLong();
-	
+
+	private Object lock = new Object();
+
 	private int batchNum;
 
 	private int insertInterval;
 
 	private String unitName;
 
-	public InsertUnit(String unitName,int batchNum, int insertInterval) {
+	public InsertUnit(String unitName, int batchNum, int insertInterval) {
 		this.unitName = unitName;
 		this.batchNum = batchNum;
 		this.insertInterval = insertInterval;
@@ -35,7 +37,7 @@ public class InsertUnit {
 	private Timer timer = new Timer();
 
 	private Thread thread = new Thread(new InsertTask());
-	
+
 	private ConnWrapper connWrapper;
 
 	private List<TimeSeriesData> dataList = new ArrayList<TimeSeriesData>();
@@ -53,7 +55,7 @@ public class InsertUnit {
 		timer.schedule(new InsertTimerTask(), 1000, this.insertInterval);
 		thread.start();
 	}
-	
+
 	public void stop() {
 		DbUtil.getInstance().closeConn(connWrapper);
 		timer.cancel();
@@ -62,18 +64,18 @@ public class InsertUnit {
 
 	// insert the timeSeries data into the timeSeries db
 	private int insert(List<TimeSeriesData> dataList) {
-		int affectRows=0;
+		int affectRows = 0;
 		try {
 			affectRows = DbUtil.getInstance().insertData(connWrapper, dataList);
-			System.out.println(this.unitName+" insert " + affectRows + " rows success");
+			System.out.println(this.unitName + " insert " + affectRows + " rows success");
 		} catch (Throwable t) {
 			t.printStackTrace();
-		} 
+		}
 		return affectRows;
 	}
 
 	// execute batch insert and rest the dataList and counter(num)
-	private synchronized void batchInsert(List<TimeSeriesData> dataList) {
+	private void batchInsert(List<TimeSeriesData> dataList) {
 		insert(dataList);
 		this.insertTotalNum.addAndGet(dataList.size());
 		dataList.clear();
@@ -93,15 +95,20 @@ public class InsertUnit {
 		@Override
 		public void run() {
 			try {
-				//if the insert thread is not working and the dataList is not empty , then this timer will insert the data
-				if (!isWorking.get() && !dataList.isEmpty()) {
-					batchInsert(dataList);
+				// if the insert thread is not working and the dataList is not empty , then this
+				// timer will insert the data
+				synchronized (lock) {
+					if (!isWorking.get() && !dataList.isEmpty()) {
+						System.out.println(
+								"Timer execute " + SeriesDb.getInstance().getTimerExecuteNum().incrementAndGet());
+						batchInsert(dataList);
+					}
 				}
+
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	class InsertTask implements Runnable {
@@ -119,14 +126,16 @@ public class InsertUnit {
 							e.printStackTrace();
 						}
 					} else {
-						isWorking.set(true);
-						// add data to the dataList until num equal batchNum
-						if (num.get() < batchNum) {
-							dataList.add(queue.poll());
-							num.incrementAndGet();
-						} else {
-							// execute batch insert data
-							batchInsert(dataList);
+						synchronized (lock) {
+							isWorking.set(true);
+							// add data to the dataList until num equal batchNum
+							if (num.get() < batchNum) {
+								dataList.add(queue.poll());
+								num.incrementAndGet();
+							} else {
+								// execute batch insert data
+								batchInsert(dataList);
+							}
 						}
 					}
 				}

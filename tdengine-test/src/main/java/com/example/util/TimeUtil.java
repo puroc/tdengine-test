@@ -14,6 +14,10 @@ public class TimeUtil {
 		return calendar.getTime();
 	}
 	
+	public static long addSecond(long time,int amount) {
+		return time+amount*1000;
+	}
+	
 	public static String format(Date date) {
 		 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		 return sdf.format(date);
@@ -24,10 +28,13 @@ public class TimeUtil {
 		 return sdf.parse(time);
 	}
 	
-	public static void main(String[] args) {
-		  Date date = new Date();
-		  System.out.println(TimeUtil.format(date));
-		  System.out.println(TimeUtil.format(TimeUtil.addSecond(date,30)));
+	public static void main(String[] args) throws ParseException {
+		  Date date1 = parse("2019-1-1 00:00:00");
+		  long d1 = date1.getTime();
+		  long d2 =  addSecond(d1,30);	  
+		  System.out.println(d1);
+		  System.out.println(d2);
+		  System.out.println(d2-d1);
 	}
 
 }

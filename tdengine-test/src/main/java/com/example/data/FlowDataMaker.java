@@ -12,7 +12,7 @@ import com.example.util.TimeUtil;
 
 public class FlowDataMaker implements IDataMaker{
 	
-	private Date fromDate;
+	private long fromTime;
 
 	private int comanpyNum;
 
@@ -24,8 +24,8 @@ public class FlowDataMaker implements IDataMaker{
 	
 	private Timer timer = new Timer();
 	
-	public FlowDataMaker(Date fromDate,int comanpyNum,int factoryNum,int rtuNum,int insertNum4Rtu) {
-		this.fromDate = fromDate;
+	public FlowDataMaker(long fromTime,int comanpyNum,int factoryNum,int rtuNum,int insertNum4Rtu) {
+		this.fromTime = fromTime;
 		this.comanpyNum = comanpyNum;
 		this.factoryNum = factoryNum;
 		this.rtuNum = rtuNum;
@@ -59,15 +59,14 @@ public class FlowDataMaker implements IDataMaker{
 				for (int k = 0; k < rtuNum; k++) {
 					String tableName = "flow_" + i + "_" + j + "_" + k;
 					for(int z=0;z<insertNum4Rtu;z++) {					
-						String time = TimeUtil.format(fromDate);
 						int forwordFlow = z;
 						int instantFlow = random.nextInt(10);
-						String data = String.format("'%s',%d,0,%d", time,forwordFlow, instantFlow);
+						String data = String.format("%d,%d,0,%d", fromTime,forwordFlow, instantFlow);
 						TimeSeriesData tsd =new TimeSeriesData();
 						tsd.setTableName(tableName);
 						tsd.setData(data);
 						SeriesDb.getInstance().insert(tsd);
-						fromDate = TimeUtil.addSecond(fromDate , 30);
+						fromTime = TimeUtil.addSecond(fromTime , 30);
 					}
 				}
 			}
