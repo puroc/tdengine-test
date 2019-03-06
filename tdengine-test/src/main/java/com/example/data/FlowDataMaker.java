@@ -47,7 +47,7 @@ public class FlowDataMaker implements IDataMaker{
 //				System.out.println("insertTotalNum:"+insertTotalNum+",expectTotalNum:"+expectTotalNum);
 				if(insertTotalNum==expectTotalNum) {
 					long end = System.currentTimeMillis();
-					System.out.println("insert "+ insertTotalNum +" rows,expend "+(end-start) +" ms");
+					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.");
 					FlowDataMaker.this.timer.cancel();
 				}
 			}

@@ -15,7 +15,7 @@ import com.example.util.DbUtil;
 public class InsertUnit {
 	
 	private AtomicLong insertTotalNum = new AtomicLong();
-
+	
 	private int batchNum;
 
 	private int insertInterval;

@@ -24,7 +24,7 @@ public class FlowTableMaker implements ITableMaker {
 	private static final String SUPER_TABLE_NAME_FLOW = "flow";
 
 	private static final String SQL_SUPER_TABLE_FLOW = String.format(
-			"create table if not exists %s (ts timestamp, forword_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
+			"create table if not exists %s (ts timestamp, forward_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
 			"flow");
 
 	private static final int THREAD_NUM = 1;

@@ -8,7 +8,7 @@ public class SeriesDb {
 	public static final SeriesDb SERIES_DB = new SeriesDb();
 	private SeriesDb () {
 		for(int i=0;i<threadNum ;i++) {
-			InsertUnit insertUnit = new InsertUnit("unit-"+i,100,15*1000);
+			InsertUnit insertUnit = new InsertUnit("unit-"+i,300,15*1000);
 			getInsertUnitList().add(insertUnit);
 			insertUnit.start();
 		}	
