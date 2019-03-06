@@ -99,12 +99,9 @@ public class InsertUnit {
 				// timer will insert the data
 				synchronized (lock) {
 					if (!isWorking.get() && !dataList.isEmpty()) {
-						System.out.println(
-								"Timer execute " + SeriesDb.getInstance().getTimerExecuteNum().incrementAndGet());
 						batchInsert(dataList);
 					}
 				}
-
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}

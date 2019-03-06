@@ -6,9 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SeriesDb {
 	
-	private AtomicInteger timerExecuteNum =  new AtomicInteger();
-	
 	public static final SeriesDb SERIES_DB = new SeriesDb();
+	
 	private SeriesDb () {
 		for(int i=0;i<threadNum ;i++) {
 			InsertUnit insertUnit = new InsertUnit("unit-"+i,100,10);
@@ -17,9 +16,11 @@ public class SeriesDb {
 		}	
 		insertUnitSize =getInsertUnitList().size();
 	}
+	
 	public static final SeriesDb getInstance() {
 		return SERIES_DB;
 	}
+	
 	private List<InsertUnit> insertUnitList = new ArrayList<InsertUnit>();
 	
 	private int insertUnitSize;
@@ -39,12 +40,4 @@ public class SeriesDb {
 	public void setInsertUnitList(List<InsertUnit> insertUnitList) {
 		this.insertUnitList = insertUnitList;
 	}
-	public AtomicInteger getTimerExecuteNum() {
-		return timerExecuteNum;
-	}
-	public void setTimerExecuteNum(AtomicInteger timerExecuteNum) {
-		this.timerExecuteNum = timerExecuteNum;
-	}
-	
- 
 }
