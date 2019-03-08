@@ -8,13 +8,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
 import com.example.ConnWrapper;
 import com.example.util.DbUtil;
 
 public class InsertUnit {
 
 	private AtomicLong insertTotalNum = new AtomicLong();
+	
+	private AtomicLong sleepTotalNum = new AtomicLong();
+	
+	private AtomicLong insertTotalTime = new AtomicLong();
 
 	private Object lock = new Object();
 
@@ -67,8 +70,12 @@ public class InsertUnit {
 	private int insert(List<TimeSeriesData> dataList) {
 		int affectRows = 0;
 		try {
+			long start = System.nanoTime();
 			affectRows = DbUtil.getInstance().insertData(connWrapper, dataList);
-			System.out.println(this.unitName + " insert " + affectRows + " rows success");
+			long end = System.nanoTime();
+			long time = end - start;
+			this.insertTotalTime.addAndGet(time);
+			System.out.println(this.unitName + " insert " + affectRows + " rows success.expend time:"+time + " ns.");
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -89,6 +96,22 @@ public class InsertUnit {
 
 	public void setInsertTotalNum(AtomicLong insertTotalNum) {
 		this.insertTotalNum = insertTotalNum;
+	}
+
+	public AtomicLong getSleepTotalNum() {
+		return sleepTotalNum;
+	}
+
+	public void setSleepTotalNum(AtomicLong sleepTotalNum) {
+		this.sleepTotalNum = sleepTotalNum;
+	}
+
+	public AtomicLong getInsertTotalTime() {
+		return insertTotalTime;
+	}
+
+	public void setInsertTotalTime(AtomicLong insertTotalTime) {
+		this.insertTotalTime = insertTotalTime;
 	}
 
 	class InsertTimerTask extends TimerTask {
@@ -119,6 +142,7 @@ public class InsertUnit {
 					if (queue.isEmpty()) {
 						try {
 							isWorking.set(false);
+							sleepTotalNum.incrementAndGet();
 							Thread.sleep(1);
 						} catch (Throwable e) {
 							e.printStackTrace();

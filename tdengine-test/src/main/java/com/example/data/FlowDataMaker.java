@@ -40,6 +40,8 @@ public class FlowDataMaker implements IDataMaker{
 			public void run() {
 				long expectTotalNum =comanpyNum*factoryNum*rtuNum*insertNum4Rtu;
 				long insertTotalNum = 0;
+				long sleepTotalNum = 0;
+				long insertTotalTime = 0;
 				List<InsertUnit> insertUnitList = SeriesDb.getInstance().getInsertUnitList();
 				for(InsertUnit unit:insertUnitList) {
 					insertTotalNum+=unit.getInsertTotalNum().get();
@@ -47,7 +49,13 @@ public class FlowDataMaker implements IDataMaker{
 //				System.out.println("insertTotalNum:"+insertTotalNum+",expectTotalNum:"+expectTotalNum);
 				if(insertTotalNum==expectTotalNum) {
 					long end = System.currentTimeMillis();
-					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.");
+					for(InsertUnit unit:insertUnitList) {
+						sleepTotalNum+=unit.getSleepTotalNum().get();
+					}
+					for(InsertUnit unit:insertUnitList) {
+						insertTotalTime+=unit.getInsertTotalTime().get();
+					}
+					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000) +",sleepNum:"+sleepTotalNum);
 					FlowDataMaker.this.timer.cancel();
 				}
 			}
