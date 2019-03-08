@@ -51,6 +51,7 @@ public class InsertUnit {
 
 	// start insert unit
 	public void start() {
+		System.out.println(this.unitName+" is starting..");
 		connWrapper = DbUtil.getInstance().connectToTaosd();
 		timer.schedule(new InsertTimerTask(), 1000, this.insertInterval);
 		thread.start();
@@ -76,8 +77,8 @@ public class InsertUnit {
 
 	// execute batch insert and rest the dataList and counter(num)
 	private void batchInsert(List<TimeSeriesData> dataList) {
-		insert(dataList);
-		this.insertTotalNum.addAndGet(dataList.size());
+		int affectRows = insert(dataList);
+		this.insertTotalNum.addAndGet(affectRows);
 		dataList.clear();
 		num.set(0);
 	}

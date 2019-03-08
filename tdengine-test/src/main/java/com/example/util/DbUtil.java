@@ -4,8 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.ConnWrapper;
 import com.example.component.TimeSeriesData;
@@ -104,14 +106,34 @@ public class DbUtil {
 		int affectRows=0;
 		try {
 		StringBuilder sb = new StringBuilder("insert into");
+		ConcurrentHashMap<String, List<String>> map = new ConcurrentHashMap<String, List<String>>();
+//		for(TimeSeriesData tsd : dataList) {
+//			String tableName = tsd.getTableName();
+//			String data = tsd.getData();
+//			sb.append(" "+tableName+" ");
+//			sb.append("values(");
+//			sb.append(data);
+//			sb.append(")");
+//		}
+		
 		for(TimeSeriesData tsd : dataList) {
-			String tableName = tsd.getTableName();
+			String tableName = tsd.getTableName();		
 			String data = tsd.getData();
-			sb.append(" "+tableName+" ");
-			sb.append("values(");
-			sb.append(data);
-			sb.append(")");
+		    map.putIfAbsent(tableName, new ArrayList<String>());
+			map.get(tableName).add(data);
 		}
+		
+		for(Entry<String, List<String>> entry :map.entrySet()) {
+			String tableName = entry.getKey();
+			List<String> values = entry.getValue();
+			sb.append(" "+tableName+" values ");
+			for(String v :values) {
+				sb.append("(");
+				sb.append(v);
+				sb.append(")");
+			}
+		}
+		
 			String sql = sb.toString();
 //			System.out.println("sql:"+sql);
 			affectRows = connWrapper.getStmt().executeUpdate(sql);

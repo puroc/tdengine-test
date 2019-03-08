@@ -9,22 +9,27 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.example.ConnWrapper;
+import com.example.config.Config;
 import com.example.util.DbUtil;
 
 public class FlowTableMaker implements ITableMaker {
 
 	private static final int DATA_FLOW_TOTAL_NUM = 10;
 
-	public static final int COMPANY_NUM = 3;
+	public static final int COMPANY_NUM = Config.getInstance().getCompanyNum();
 
-	public static final int FACTORY_NUM = 2;
+	public static final int FACTORY_NUM = Config.getInstance().getFactoryNum();
 
-	public static final int RTU_NUM = 10;
+	public static final int RTU_NUM = Config.getInstance().getRtuNum();
 
 	private static final String SUPER_TABLE_NAME_FLOW = "flow";
 
+//	private static final String SQL_SUPER_TABLE_FLOW = String.format(
+//			"create table if not exists %s (ts timestamp, forward_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
+//			"flow");
+	
 	private static final String SQL_SUPER_TABLE_FLOW = String.format(
-			"create table if not exists %s (ts timestamp, forward_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
+			"create table if not exists %s (ts timestamp, accumulated_flow int ,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",
 			"flow");
 
 	private static final int THREAD_NUM = 1;

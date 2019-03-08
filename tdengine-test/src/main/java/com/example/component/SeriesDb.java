@@ -2,19 +2,22 @@ package com.example.component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import com.example.config.Config;
 
 public class SeriesDb {
+	
+	private int threadNum = Config.getInstance().getThreadNum();
 	
 	public static final SeriesDb SERIES_DB = new SeriesDb();
 	
 	private SeriesDb () {
 		for(int i=0;i<threadNum ;i++) {
-			InsertUnit insertUnit = new InsertUnit("unit-"+i,100,10);
+			InsertUnit insertUnit = new InsertUnit("unit-"+i,Config.getInstance().getBatchNum(),10);
 			getInsertUnitList().add(insertUnit);
 			insertUnit.start();
 		}	
-		insertUnitSize =getInsertUnitList().size();
+		insertUnitSize = getInsertUnitList().size();
 	}
 	
 	public static final SeriesDb getInstance() {
@@ -24,8 +27,6 @@ public class SeriesDb {
 	private List<InsertUnit> insertUnitList = new ArrayList<InsertUnit>();
 	
 	private int insertUnitSize;
-	
-	private int threadNum =5;
 	
 	//select a insertUnit and add the data into it
 	public synchronized void insert(TimeSeriesData tsd) {

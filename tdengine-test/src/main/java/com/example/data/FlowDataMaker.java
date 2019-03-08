@@ -1,10 +1,10 @@
 package com.example.data;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import com.example.component.InsertUnit;
 import com.example.component.SeriesDb;
 import com.example.component.TimeSeriesData;
@@ -58,15 +58,16 @@ public class FlowDataMaker implements IDataMaker{
 			for (int j = 0; j < factoryNum; j++) {
 				for (int k = 0; k < rtuNum; k++) {
 					String tableName = "flow_" + i + "_" + j + "_" + k;
-					for(int z=0;z<insertNum4Rtu;z++) {					
-						int forwordFlow = z;
+					long lastFromTime = fromTime;
+					for(int z=0;z<insertNum4Rtu;z++) {	
+						int accumulatedFlow = z;
 						int instantFlow = random.nextInt(10);
-						String data = String.format("%d,%d,0,%d", fromTime,forwordFlow, instantFlow);
+						String data = String.format("%d,%d,%d", lastFromTime,accumulatedFlow, instantFlow);
 						TimeSeriesData tsd =new TimeSeriesData();
 						tsd.setTableName(tableName);
 						tsd.setData(data);
 						SeriesDb.getInstance().insert(tsd);
-						fromTime = TimeUtil.addSecond(fromTime , 30);
+						lastFromTime = TimeUtil.addSecond(lastFromTime , 30);
 					}
 				}
 			}
