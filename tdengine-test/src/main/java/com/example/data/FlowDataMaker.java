@@ -40,7 +40,7 @@ public class FlowDataMaker implements IDataMaker{
 			public void run() {
 				long expectTotalNum =comanpyNum*factoryNum*rtuNum*insertNum4Rtu;
 				long insertTotalNum = 0;
-				long sleepTotalNum = 0;
+				long sleepTotalTime = 0;
 				long insertTotalTime = 0;
 				List<InsertUnit> insertUnitList = SeriesDb.getInstance().getInsertUnitList();
 				for(InsertUnit unit:insertUnitList) {
@@ -50,12 +50,12 @@ public class FlowDataMaker implements IDataMaker{
 				if(insertTotalNum==expectTotalNum) {
 					long end = System.currentTimeMillis();
 					for(InsertUnit unit:insertUnitList) {
-						sleepTotalNum+=unit.getSleepTotalNum().get();
+						sleepTotalTime+=unit.getSleepTotalTime().get();
 					}
 					for(InsertUnit unit:insertUnitList) {
 						insertTotalTime+=unit.getInsertTotalTime().get();
 					}
-					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000) +",sleepNum:"+sleepTotalNum);
+					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000 / insertUnitList.size() ) +" ms.sleepTotalTime:"+ (sleepTotalTime / insertUnitList.size())+" ms.");
 					FlowDataMaker.this.timer.cancel();
 				}
 			}
@@ -80,7 +80,40 @@ public class FlowDataMaker implements IDataMaker{
 				}
 			}
 		}
+		
+//		for (int i = 0; i < comanpyNum; i++) {
+//			new Thread(new Task(i)).start();
+//		}
+	
 	}
+	
+	class Task implements Runnable{
+		
+		private int companyId;
+
+		public Task(int companyId) {
+			this.companyId = companyId;}
+
+		public void run() {
+			Random random = new Random();
+			for (int j = 0; j < factoryNum; j++) {
+				for (int k = 0; k < rtuNum; k++) {
+					String tableName = "flow_" + companyId + "_" + j + "_" + k;
+					long lastFromTime = fromTime;
+					for(int z=0;z<insertNum4Rtu;z++) {	
+						int accumulatedFlow = z;
+						int instantFlow = random.nextInt(10);
+						String data = String.format("%d,%d,%d", lastFromTime,accumulatedFlow, instantFlow);
+						TimeSeriesData tsd =new TimeSeriesData();
+						tsd.setTableName(tableName);
+						tsd.setData(data);
+						SeriesDb.getInstance().insert(tsd);
+						lastFromTime = TimeUtil.addSecond(lastFromTime , 30);
+					}
+				}
+			}
+			
+		}}
 	
 	
 

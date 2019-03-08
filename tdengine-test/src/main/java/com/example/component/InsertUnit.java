@@ -15,7 +15,7 @@ public class InsertUnit {
 
 	private AtomicLong insertTotalNum = new AtomicLong();
 	
-	private AtomicLong sleepTotalNum = new AtomicLong();
+	private AtomicLong sleepTotalTime = new AtomicLong();
 	
 	private AtomicLong insertTotalTime = new AtomicLong();
 
@@ -28,7 +28,7 @@ public class InsertUnit {
 	private String unitName;
 
 	public InsertUnit(String unitName, int batchNum, int insertInterval) {
-		this.unitName = unitName;
+		this.setUnitName(unitName);
 		this.batchNum = batchNum;
 		this.insertInterval = insertInterval;
 	}
@@ -54,7 +54,7 @@ public class InsertUnit {
 
 	// start insert unit
 	public void start() {
-		System.out.println(this.unitName+" is starting..");
+		System.out.println(this.getUnitName()+" is starting..");
 		connWrapper = DbUtil.getInstance().connectToTaosd();
 		timer.schedule(new InsertTimerTask(), 1000, this.insertInterval);
 		thread.start();
@@ -70,12 +70,8 @@ public class InsertUnit {
 	private int insert(List<TimeSeriesData> dataList) {
 		int affectRows = 0;
 		try {
-			long start = System.nanoTime();
 			affectRows = DbUtil.getInstance().insertData(connWrapper, dataList);
-			long end = System.nanoTime();
-			long time = end - start;
-			this.insertTotalTime.addAndGet(time);
-			System.out.println(this.unitName + " insert " + affectRows + " rows success.expend time:"+time + " ns.");
+			System.out.println(this.getUnitName() + " insert " + affectRows + " rows success");
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -84,7 +80,11 @@ public class InsertUnit {
 
 	// execute batch insert and rest the dataList and counter(num)
 	private void batchInsert(List<TimeSeriesData> dataList) {
+		long start = System.nanoTime();
 		int affectRows = insert(dataList);
+		long end = System.nanoTime();
+		long time = end - start;
+		this.insertTotalTime.addAndGet(time);
 		this.insertTotalNum.addAndGet(affectRows);
 		dataList.clear();
 		num.set(0);
@@ -98,12 +98,12 @@ public class InsertUnit {
 		this.insertTotalNum = insertTotalNum;
 	}
 
-	public AtomicLong getSleepTotalNum() {
-		return sleepTotalNum;
+	public AtomicLong getSleepTotalTime() {
+		return sleepTotalTime;
 	}
 
-	public void setSleepTotalNum(AtomicLong sleepTotalNum) {
-		this.sleepTotalNum = sleepTotalNum;
+	public void setSleepTotalTime(AtomicLong sleepTotalTime) {
+		this.sleepTotalTime = sleepTotalTime;
 	}
 
 	public AtomicLong getInsertTotalTime() {
@@ -112,6 +112,14 @@ public class InsertUnit {
 
 	public void setInsertTotalTime(AtomicLong insertTotalTime) {
 		this.insertTotalTime = insertTotalTime;
+	}
+
+	public String getUnitName() {
+		return unitName;
+	}
+
+	public void setUnitName(String unitName) {
+		this.unitName = unitName;
 	}
 
 	class InsertTimerTask extends TimerTask {
@@ -142,7 +150,7 @@ public class InsertUnit {
 					if (queue.isEmpty()) {
 						try {
 							isWorking.set(false);
-							sleepTotalNum.incrementAndGet();
+							sleepTotalTime.incrementAndGet();
 							Thread.sleep(1);
 						} catch (Throwable e) {
 							e.printStackTrace();
