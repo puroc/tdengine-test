@@ -21,13 +21,14 @@ public class DbUtil {
 	private static final String TSDB_DRIVER = "com.taosdata.jdbc.TSDBDriver";
 	public static final String DB_NAME = "water_db";
 	private static String host = Config.getInstance().getHost();
+//	private static String host = "192.168.167.201";
 	private static String user = "root";
 	private static String password = "taosdata";
-	private static int port = 6020;
+	private static int port = 0;
 	private String jdbcUrl = String.format("%s%s:%d/%s?user=%s&password=%s", JDBC_PROTOCAL, host, port, "", user,
 			password);
 
-	private static final String SQL_CREATE_DB = String.format("create database if not exists %s", DB_NAME);
+	private static final String SQL_CREATE_DB = String.format("create database if not exists %s replica 2 cache 1024", DB_NAME);
 
 	public static final DbUtil DB_UTIL = new DbUtil();
 
