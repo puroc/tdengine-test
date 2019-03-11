@@ -54,7 +54,7 @@ public class Main {
 			} else if (args[i].startsWith(Config.INSERT_NUM_PER_RTU)) {
 				Config.getInstance().setInsertNumPerRtu(Integer.parseInt(args[i].split("=")[1]));
 			} else if (args[i].startsWith(Config.INSERT_NUM_PER_METER)) {
-				Config.getInstance().setInsertNumPerRtu(Integer.parseInt(args[i].split("=")[1]));
+				Config.getInstance().setInsertNumPerMeter(Integer.parseInt(args[i].split("=")[1]));
 			} else {
 				System.out.println("wrong arg:" + args[i]);
 			}
