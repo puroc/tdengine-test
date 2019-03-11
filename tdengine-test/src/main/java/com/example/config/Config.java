@@ -8,7 +8,7 @@ public class Config {
 	public static final Config getInstance() {
 		return CONFIG;
 	}
-	
+	public static final String HOST = "host";
 	public static final String BATCH_NUM = "batchNum";
 	public static final String THREAD_NUM="threadNum";
 	public static final String COMPANY_NUM="companyNum";
@@ -26,6 +26,7 @@ public class Config {
 	private int meterNum;
 	private int insertNumPerRtu;
 	private int insertNumPerMeter;
+	private String host;
 	
 	public int getBatchNum() {
 		return batchNum;
@@ -74,6 +75,12 @@ public class Config {
 	}
 	public void setInsertNumPerMeter(int insertNumPerMeter) {
 		this.insertNumPerMeter = insertNumPerMeter;
+	}
+	public String getHost() {
+		return host;
+	}
+	public void setHost(String host) {
+		this.host = host;
 	}
 	
 

@@ -13,13 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.example.ConnWrapper;
 import com.example.component.TimeSeriesData;
+import com.example.config.Config;
 
 public class DbUtil {
 
 	private static final String JDBC_PROTOCAL = "jdbc:TSDB://";
 	private static final String TSDB_DRIVER = "com.taosdata.jdbc.TSDBDriver";
 	public static final String DB_NAME = "water_db";
-	private static String host = "192.168.167.201";
+	private static String host = Config.getInstance().getHost();
 	private static String user = "root";
 	private static String password = "taosdata";
 	private static int port = 6020;
