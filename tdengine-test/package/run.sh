@@ -1,1 +1,1 @@
-java -classpath ./lib/JDBCDriver-1.0.0-dist.jar:./lib/tdengine-test-0.0.1-SNAPSHOT.jar com.example.Main
+java -classpath ./lib/JDBCDriver-1.0.0-dist.jar:./lib/tdengine-test-0.0.1-SNAPSHOT.jar com.example.Main batchNum=100 threadNum=5 companyNum=3 factoryNum=2 rtuNum=10 insertNumPerRtu=10000 meterNum=10 insertNumPerMeter=10000
