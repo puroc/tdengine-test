@@ -7,6 +7,7 @@ import java.util.TimerTask;
 import com.example.component.InsertUnit;
 import com.example.component.SeriesDb;
 import com.example.component.TimeSeriesData;
+import com.example.table.MeterTableMaker;
 import com.example.util.TimeUtil;
 
 public class MeterDataMaker implements IDataMaker{
@@ -43,7 +44,7 @@ public class MeterDataMaker implements IDataMaker{
 				for(InsertUnit unit:insertUnitList) {
 					insertTotalNum+=unit.getInsertTotalNum().get();
 				}
-//				System.out.println("insertTotalNum:"+insertTotalNum+",expectTotalNum:"+expectTotalNum);
+//				System.out.println("[MeterDataMaker]insertTotalNum:"+insertTotalNum+",expectTotalNum:"+expectTotalNum);
 				if(insertTotalNum==expectTotalNum) {
 					long end = System.currentTimeMillis();
 					for(InsertUnit unit:insertUnitList) {
@@ -54,6 +55,9 @@ public class MeterDataMaker implements IDataMaker{
 					}
 					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000 / insertUnitList.size() ) +" ms.sleepTotalTime:"+ (sleepTotalTime / insertUnitList.size())+" ms.");
 					MeterDataMaker.this.timer.cancel();
+					for(InsertUnit unit:insertUnitList) {
+						unit.clearCount();
+					}
 				}
 			}
 		}, 0, 10);
@@ -61,11 +65,11 @@ public class MeterDataMaker implements IDataMaker{
 		Random random = new Random();
 		for (int i = 0; i < comanpyNum; i++) {
 				for (int k = 0; k < meterNum; k++) {
-					String tableName = "flow_" + i + "_" + j + "_" + k;
+					String tableName = MeterTableMaker.SUPER_TABLE_NAME_METER+"_" + i + "_" + k;
 					long lastFromTime = fromTime;
 					for(int z=0;z<insertNum4Meter;z++) {	
 						int reading = z;
-						String data = String.format("%d,%d,%d", lastFromTime,reading);
+						String data = String.format("%d,%d", lastFromTime,reading);
 						TimeSeriesData tsd =new TimeSeriesData();
 						tsd.setTableName(tableName);
 						tsd.setData(data);

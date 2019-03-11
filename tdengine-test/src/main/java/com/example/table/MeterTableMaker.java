@@ -6,7 +6,7 @@ import com.example.util.DbUtil;
 
 public class MeterTableMaker implements ITableMaker {
 
-	private static final String SUPER_TABLE_NAME_METER = "meter";
+	public static final String SUPER_TABLE_NAME_METER = "meter";
 	
 	public static final int COMPANY_NUM = Config.getInstance().getCompanyNum();
 	

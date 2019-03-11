@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import com.example.component.InsertUnit;
 import com.example.component.SeriesDb;
 import com.example.component.TimeSeriesData;
+import com.example.table.FlowTableMaker;
 import com.example.util.TimeUtil;
 
 public class FlowDataMaker implements IDataMaker{
@@ -57,6 +58,9 @@ public class FlowDataMaker implements IDataMaker{
 					}
 					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000 / insertUnitList.size() ) +" ms.sleepTotalTime:"+ (sleepTotalTime / insertUnitList.size())+" ms.");
 					FlowDataMaker.this.timer.cancel();
+					for(InsertUnit unit:insertUnitList) {
+						unit.clearCount();
+					}
 				}
 			}
 		}, 0, 10);
@@ -98,7 +102,7 @@ public class FlowDataMaker implements IDataMaker{
 			Random random = new Random();
 			for (int j = 0; j < factoryNum; j++) {
 				for (int k = 0; k < rtuNum; k++) {
-					String tableName = "flow_" + companyId + "_" + j + "_" + k;
+					String tableName = FlowTableMaker.SUPER_TABLE_NAME_FLOW+"_" + companyId + "_" + j + "_" + k;
 					long lastFromTime = fromTime;
 					for(int z=0;z<insertNum4Rtu;z++) {	
 						int accumulatedFlow = z;

@@ -121,6 +121,12 @@ public class InsertUnit {
 	public void setUnitName(String unitName) {
 		this.unitName = unitName;
 	}
+	
+	public void clearCount() {
+		this.getInsertTotalNum().set(0);
+		this.getInsertTotalTime().set(0);
+		this.getSleepTotalTime().set(0);
+	}
 
 	class InsertTimerTask extends TimerTask {
 

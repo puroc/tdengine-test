@@ -22,7 +22,7 @@ public class FlowTableMaker implements ITableMaker {
 
 	public static final int RTU_NUM = Config.getInstance().getRtuNum();
 
-	private static final String SUPER_TABLE_NAME_FLOW = "flow";
+	public static final String SUPER_TABLE_NAME_FLOW = "flow";
 
 //	private static final String SQL_SUPER_TABLE_FLOW = String.format(
 //			"create table if not exists %s (ts timestamp, forward_flow int ,negative_flow int,instant_flow int) tags(company_id int,factory_id int,device_id nchar(50))",

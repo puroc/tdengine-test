@@ -30,7 +30,7 @@ public class SeriesDb {
 	
 	//select a insertUnit and add the data into it
 	public synchronized void insert(TimeSeriesData tsd) {
-		int hashCode = tsd.getTableName().hashCode();
+		int hashCode = Math.abs(tsd.getTableName().hashCode());
 		int index =  hashCode % insertUnitSize;
 		InsertUnit insertUnit =getInsertUnitList().get(index);
 		insertUnit.add(tsd);

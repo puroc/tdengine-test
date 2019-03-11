@@ -1,6 +1,7 @@
 package com.example;
 
 import java.text.ParseException;
+import java.util.Scanner;
 
 import com.example.config.Config;
 import com.example.data.FlowDataMaker;
@@ -15,23 +16,39 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			readArgs(args);
+
 			DbUtil.getInstance().createDb();
 
 			long fromTime = TimeUtil.parse("2019-01-01 00:00:00").getTime();
 
-//			FlowTableMaker ftm = new FlowTableMaker();
-//			ftm.run();
+			Scanner scanner = new Scanner(System.in);
 
-//			FlowDataMaker fdm = new FlowDataMaker(fromTime, FlowTableMaker.COMPANY_NUM, FlowTableMaker.FACTORY_NUM,
-//					FlowTableMaker.RTU_NUM, Config.getInstance().getInsertNumPerRtu());
-//			fdm.run();
-
-			MeterTableMaker mtm = new MeterTableMaker();
-			mtm.run();
-
-			MeterDataMaker mdm = new MeterDataMaker(fromTime, MeterTableMaker.COMPANY_NUM, MeterTableMaker.METER_NUM,
-					Config.getInstance().getInsertNumPerMeter());
-			mdm.run();
+			while (true) {
+				System.out.println("please input command..");
+				if (scanner.hasNext()) {
+					String next = scanner.nextLine();
+					System.out.println("next:"+next);
+					if ("c flow".equalsIgnoreCase(next)) {
+						FlowTableMaker ftm = new FlowTableMaker();
+						ftm.run();
+					} else if ("d flow".equalsIgnoreCase(next)) {
+						FlowDataMaker fdm = new FlowDataMaker(fromTime, FlowTableMaker.COMPANY_NUM,
+								FlowTableMaker.FACTORY_NUM, FlowTableMaker.RTU_NUM,
+								Config.getInstance().getInsertNumPerRtu());
+						fdm.run();
+					} else if ("c meter".equalsIgnoreCase(next)) {
+						MeterTableMaker mtm = new MeterTableMaker();
+						mtm.run();
+					} else if ("d meter".equalsIgnoreCase(next)) {
+						MeterDataMaker mdm = new MeterDataMaker(fromTime, MeterTableMaker.COMPANY_NUM,
+								MeterTableMaker.METER_NUM, Config.getInstance().getInsertNumPerMeter());
+						mdm.run();
+					} else {
+						System.out.println("wrong command");
+						continue;
+					}
+				}
+			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
