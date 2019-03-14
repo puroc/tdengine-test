@@ -19,7 +19,8 @@ public class Main {
 
 			DbUtil.getInstance().createDb();
 
-			long fromTime = TimeUtil.parse("2019-01-01 00:00:00").getTime();
+			String fromDate = Config.getInstance().getFromDate();
+			long fromTime = TimeUtil.parse(fromDate+" 00:00:00").getTime();
 
 			Scanner scanner = new Scanner(System.in);
 
@@ -72,6 +73,8 @@ public class Main {
 				Config.getInstance().setInsertNumPerRtu(Integer.parseInt(args[i].split("=")[1]));
 			} else if (args[i].startsWith(Config.INSERT_NUM_PER_METER)) {
 				Config.getInstance().setInsertNumPerMeter(Integer.parseInt(args[i].split("=")[1]));
+			} else if (args[i].startsWith(Config.FROM_DATE)) {
+				Config.getInstance().setFromDate(args[i].split("=")[1]);
 			} else if (args[i].startsWith(Config.HOST)) {
 				Config.getInstance().setHost(args[i].split("=")[1]);
 			} else {

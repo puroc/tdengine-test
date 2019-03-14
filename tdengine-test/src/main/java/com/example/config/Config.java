@@ -17,6 +17,7 @@ public class Config {
 	public static final String METER_NUM="meterNum";
 	public static final String INSERT_NUM_PER_RTU="insertNumPerRtu";
 	public static final String INSERT_NUM_PER_METER="insertNumPerMeter";
+	public static final String FROM_DATE="fromDate";
 	
 	private int batchNum;
 	private int threadNum;
@@ -27,6 +28,7 @@ public class Config {
 	private int insertNumPerRtu;
 	private int insertNumPerMeter;
 	private String host;
+	private String fromDate;
 	
 	public int getBatchNum() {
 		return batchNum;
@@ -81,6 +83,12 @@ public class Config {
 	}
 	public void setHost(String host) {
 		this.host = host;
+	}
+	public String getFromDate() {
+		return fromDate;
+	}
+	public void setFromDate(String fromDate) {
+		this.fromDate = fromDate;
 	}
 	
 
