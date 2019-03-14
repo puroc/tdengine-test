@@ -69,9 +69,12 @@ public class InsertUnit {
 	// insert the timeSeries data into the timeSeries db
 	private int insert(List<TimeSeriesData> dataList) {
 		int affectRows = 0;
-		try {
+		try {	long start = System.nanoTime();
 			affectRows = DbUtil.getInstance().insertData(connWrapper, dataList);
-			System.out.println(this.getUnitName() + " insert " + affectRows + " rows success");
+			long end = System.nanoTime();
+			long time = end - start;
+			this.insertTotalTime.addAndGet(time);
+//			System.out.println(this.getUnitName() + " insert " + affectRows + " rows success");
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -80,11 +83,7 @@ public class InsertUnit {
 
 	// execute batch insert and rest the dataList and counter(num)
 	private void batchInsert(List<TimeSeriesData> dataList) {
-		long start = System.nanoTime();
 		int affectRows = insert(dataList);
-		long end = System.nanoTime();
-		long time = end - start;
-		this.insertTotalTime.addAndGet(time);
 		this.insertTotalNum.addAndGet(affectRows);
 		dataList.clear();
 		num.set(0);

@@ -28,7 +28,7 @@ public class DbUtil {
 	private String jdbcUrl = String.format("%s%s:%d/%s?user=%s&password=%s", JDBC_PROTOCAL, host, port, "", user,
 			password);
 
-	private static final String SQL_CREATE_DB = String.format("create database if not exists %s replica 2", DB_NAME);
+	private static final String SQL_CREATE_DB = String.format("create database if not exists %s replica 2 tables 5000 cache 4096", DB_NAME);
 
 	public static final DbUtil DB_UTIL = new DbUtil();
 

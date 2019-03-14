@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.example.component.InsertUnit;
 import com.example.component.SeriesDb;
 import com.example.component.TimeSeriesData;
@@ -19,6 +21,8 @@ public class MeterDataMaker implements IDataMaker{
 	private int meterNum;
 
 	private int insertNum4Meter;
+	
+	private AtomicInteger num4Print = new AtomicInteger() ;
 	
 	private Timer timer = new Timer();
 	
@@ -36,16 +40,18 @@ public class MeterDataMaker implements IDataMaker{
 			
 			@Override
 			public void run() {
+				num4Print.incrementAndGet();
 				long expectTotalNum =comanpyNum*meterNum*insertNum4Meter;
 				long insertTotalNum = 0;
-				long sleepTotalTime = 0;
-				long insertTotalTime = 0;
+				
 				List<InsertUnit> insertUnitList = SeriesDb.getInstance().getInsertUnitList();
 				for(InsertUnit unit:insertUnitList) {
 					insertTotalNum+=unit.getInsertTotalNum().get();
 				}
-//				System.out.println("[MeterDataMaker]insertTotalNum:"+insertTotalNum+",expectTotalNum:"+expectTotalNum);
-				if(insertTotalNum==expectTotalNum) {
+				if(num4Print.get()==100) {
+					num4Print.set(0);
+					long sleepTotalTime = 0;
+					long insertTotalTime = 0;
 					long end = System.currentTimeMillis();
 					for(InsertUnit unit:insertUnitList) {
 						sleepTotalTime+=unit.getSleepTotalTime().get();
@@ -53,7 +59,26 @@ public class MeterDataMaker implements IDataMaker{
 					for(InsertUnit unit:insertUnitList) {
 						insertTotalTime+=unit.getInsertTotalTime().get();
 					}
-					System.out.println("insert "+ insertTotalNum +" rows,total expend:"+(end-start) +" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000 / insertUnitList.size() ) +" ms.sleepTotalTime:"+ (sleepTotalTime / insertUnitList.size())+" ms.");
+					System.out.println("[MeterDataMaker]insertTotalNum:"+insertTotalNum+" rows"
+							+ ",expend:"+(end-start)+" ms."
+							+ "insertTotalTime:"+(insertTotalTime / 1000 / 1000 / insertUnitList.size()+" ms." ) 	
+							+"sleepTotalTime:"+ (sleepTotalTime / insertUnitList.size())+" ms." );
+				}
+
+				if(insertTotalNum==expectTotalNum) {
+					long sleepTotalTime = 0;
+					long insertTotalTime = 0;
+					long end = System.currentTimeMillis();
+					for(InsertUnit unit:insertUnitList) {
+						sleepTotalTime+=unit.getSleepTotalTime().get();
+					}
+					for(InsertUnit unit:insertUnitList) {
+						insertTotalTime+=unit.getInsertTotalTime().get();
+					}
+					System.out.println("insert "+ insertTotalNum 
+							+" rows,total expend:"+(end-start) 
+							+" ms.insertTotalTime:"+(insertTotalTime / 1000 / 1000 / insertUnitList.size() ) 
+							+" ms.sleepTotalTime:"+ (sleepTotalTime / insertUnitList.size())+" ms.");
 					MeterDataMaker.this.timer.cancel();
 					for(InsertUnit unit:insertUnitList) {
 						unit.clearCount();
@@ -78,5 +103,13 @@ public class MeterDataMaker implements IDataMaker{
 					}
 				}
 		}
+	}
+
+	public AtomicInteger getNum4Print() {
+		return num4Print;
+	}
+
+	public void setNum4Print(AtomicInteger num4Print) {
+		this.num4Print = num4Print;
 	}
 }

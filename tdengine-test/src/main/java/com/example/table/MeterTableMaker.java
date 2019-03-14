@@ -10,7 +10,7 @@ public class MeterTableMaker implements ITableMaker {
 	
 	public static final int COMPANY_NUM = Config.getInstance().getCompanyNum();
 	
-	public static final int METER_NUM = Config.getInstance().getRtuNum();
+	public static final int METER_NUM = Config.getInstance().getMeterNum();
 	
 	private static final String SQL_SUPER_TABLE_METER = String.format(
 			"create table if not exists %s (ts timestamp, reading int) tags(company_id int,device_id nchar(50))",
